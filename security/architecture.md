@@ -26,7 +26,7 @@ Security Context 는 Local Thread를 사용하여 스레드마다 고유한 저�
 SecurityContextRepository는 인터페이스로 여러가지의 구현체가 있는데 그 중에서 세션을 사용할 경우에는 HttpSessionSecurityContextRepository를 사용하게 된다. HttpSessionSecurityContextRepository는 세션에 있는 인증정보를 가져와 요청을 수행할 스레드의 Security Context에 저장한다. 해당 스레드는 요청을 처리하는 과정에서 다른 스레드와 해당 정보를 공유하지 않는다. 요청을 모두 처리하게 되면 Local Thread에 있는 인증정보를 세션에 갱신하고 스레드의 Local Thread를 비운다.
 
 이 필터의 우선순위가 높은 이유는 만약 들어온 요청이 인증이 필요한 요청이라면 남은 필터들을 거치면서 인증처리를 해야하지만 이미 인증이 된 요청이라면 남아있는 필터들을 거칠 필요가 없기 때문에 우선순위가 높은 것이다.
-JWT는 상태를 서버측에서 저장할 필요가 없는 stateless 인증이기 때문에 SecurityFilterChain에 sessionManagement 설정을 통하여 해당 필터를 비활성화 시켜줄 수 있다.
+JWT는 상태를 서버측에서 저장할 필요가 없는 stateless 인증이기 때문에 SecurityFilterChain에 sessionManagement 설정을 통하여 해당 필터를 비활성화 시켜줄 수 있다.
 
 
 
