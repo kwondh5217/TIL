@@ -29,4 +29,40 @@ SecurityContextRepository는 인터페이스로 여러가지의 구현체가 있
 JWT는 상태를 서버측에서 저장할 필요가 없는 stateless 인증이기 때문에 SecurityFilterChain에 sessionManagement 설정을 통하여 해당 필터를 비활성화 시켜줄 수 있다.
 
 
+### 3. HeaderWriterFilter
+
+Response Header에 시큐리티 관련 Header를 추가해주는 Filter이다. 내부에 Header를 추가해주는 HeaderWriter의 List를 가지고 있으며 이를 사용해서 설정에 맞게 Header에 정보를  작성한다. 
+
+- X-content-type-Options<br>
+  
+  X-Content-Type-Options: nosniff<br>
+  Header에 명시된 컨텐츠 타입으로만 데이터를 처리한다. Header에 명시된 데이터 타입으로만 처리를 하며 추론하는 행위를 하지 않는다.
+
+- X-xss-protection
+
+  XSS(크로스 사이트 스크립팅) 공격을 방어하는 Header<br>
+  
+
+- Cache-control
+
+  캐시 히스토리 취약점을 방어하는 Header<br>
+  정적인 페이지가 아니라면 민감정보가 노출될 수 있으므로 캐시를 설정하지 않는다.
+
+- HSTS
+
+  HTTPS로만 통신을 강제하는 Header<br>
+  공격자가 사용자와 서버 사이의 통신을 가로채 정보를 도청하거나 변조하는 것을 방지한다. 예를 들어, 공격자가 네트워크 트래픽을 가로채어 사용자를 가짜 페이지로 리다이렉트하는 것을 방지할 수 있다.
+
+- X-frame-options
+
+  clickjacking(클릭재킹) 공격을 방어하는 Header<br>
+  공격자가 만든 웹사이트에 투명한 iframe에 다른 사이트를 불러와서 그 위에 다른 요소들을 배치함으로써 사용자의 클릭을 유도하여 공격을 하는 행위이다. 나의 서버의 웹사이트를 다른 사이트의 iframe안에 불러오는 것을 막을 수 있다.<br>
+
+  스프링 시큐리티와 H2 데이터베이스를 console로 사용하게 된다면 기본적으로 X-frame-Options Header가 설정되어 있다. h2-console에 대한 경로로 접근하면 화면이 정상적으로 출력이 되지 않는데 H2를 콘솔해서 사용하는 것은 iframe 태그 내에 데이터베이스를 조작할 수 있는 스크립트가 있기 때문에 X-frame-Options를 설정하지 않으면 정상적으로 동작하지 않게 되는 원리이다.
+
+### 4. CSRF Filter
+CSRF 공격을 방지하는 Filter<br>
+
+인증된 유저의 계정을 사용해 인증된 서버에 악의적인 요청을 발생시키는 공격. 보통은 같은 도메인에서 오는 요청만 처리하도록 CORS 설정을 하면 예방이 되지만 REST API를 만들다보면 다른 도메인에서의 요청도 허용해주어야 하는 상황이 발생한다.<br>
+Form 인증을 하는 경우에 스프링 시큐리티는 인증 Form에 CSRF 토큰을 hidden으로 설정하여 보이지 않게 담아서 보내준다. 사용자는 CSRF 토큰의 존재는 모른채로 서버에 CSRF 토큰과 함께 요청을 보내게 되고 서버는 CSRF 토큰을 확인하고 요청을 처리한다.
 
