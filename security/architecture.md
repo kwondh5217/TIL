@@ -60,9 +60,33 @@ Response Header에 시큐리티 관련 Header를 추가해주는 Filter이다. �
 
   스프링 시큐리티와 H2 데이터베이스를 console로 사용하게 된다면 기본적으로 X-frame-Options Header가 설정되어 있다. h2-console에 대한 경로로 접근하면 화면이 정상적으로 출력이 되지 않는데 H2를 콘솔해서 사용하는 것은 iframe 태그 내에 데이터베이스를 조작할 수 있는 스크립트가 있기 때문에 X-frame-Options를 설정하지 않으면 정상적으로 동작하지 않게 되는 원리이다.
 
-### 4. CSRF Filter
+### 4. CsfrFilter
 CSRF 공격을 방지하는 Filter<br>
 
 인증된 유저의 계정을 사용해 인증된 서버에 악의적인 요청을 발생시키는 공격. 보통은 같은 도메인에서 오는 요청만 처리하도록 CORS 설정을 하면 예방이 되지만 REST API를 만들다보면 다른 도메인에서의 요청도 허용해주어야 하는 상황이 발생한다.<br>
 Form 인증을 하는 경우에 스프링 시큐리티는 인증 Form에 CSRF 토큰을 hidden으로 설정하여 보이지 않게 담아서 보내준다. 사용자는 CSRF 토큰의 존재는 모른채로 서버에 CSRF 토큰과 함께 요청을 보내게 되고 서버는 CSRF 토큰을 확인하고 요청을 처리한다.
 
+### 5. LogoutFilter
+로그아웃을 처리하는 Filter<br>
+컴포짓 패턴이 적용되어 있으며 내부에 컴포짓 객체가 있고 여러개의 로그아웃을 처리하는 Handler를 사용하여 로그아웃을 처리한다. 들어온 요청이 로그아웃 요청인지를 판단하고 로그아웃을 처리하는 필터이다. LogoutSuccessHandler는 로그아웃이 완료되고 나서 다음 작업을 수행하는 Handler이다.
+
+### 6. UsernamePasswordAuthenticationFilter
+Form 로그인을 처리하는 필터<br>
+사용자가 요청으로 아이디와 비밀번호와 함께 로그인요청을 서버에 보내게 되면 UsernamePasswordAuthenticationFilter가 이 요청을 처리하게 된다. 요청으로 들어온 아이디와 비밀번호를 가지고 authentication 을 생성한 뒤 AuthenticationManager에게 인증을 위임한다. AuthenticationManager의 기본구현체인 ProviderManager는 AuthenticationProvider 컬렉션을 가지고 이를 통해서 로그인을 처리하게 된다. 이 과정에서 UserDeatilsService의 loadUserByUsername가 중요한 역할을 한다. AuthenticationManager는 userDetailsService의 loadUserByUsername 메서드를 호출해 사용자의 비밀번호를 가져와 이를 매치시켜보고 맞다면 인증정보를 생성하여 SecurityContext에 저장하게 된다. 따라서 시큐리티로 폼 로그인을 구현한다면 userDetailsService의 loadUserByUsername을 필수적으로 구현하여야 한다.
+
+### 7. DefaultLoginPageGeneratingFilter, DefaultLogoutPageGeneratingFilter
+
+로그인, 로그아웃 시 필요한 기본 페이지를 만들어주는 필터<br>
+커스텀한 로그인 페이지를 만들어서 사용한다면 두 필터는 필터체인에 등록되지 않는다.
+
+
+### 8. BasicAuthenticationFilter
+
+Basic 인증을 처리하는 필터<br>
+요청을 보낼 때, HTTP 헤더의 Authorization: Basic {base64 인코딩} 부분에 사용자 이름과 비밀번호를 Base64로 인코딩하여 전송하는 방식을 Basic 인증이라고 한다. 이 방식은 세션을 사용하지 않는 무상태 인증 방식이며, JWT와 개념적으로 비슷하다. 그러나 Basic 인증은 Base64로 인코딩된 정보를 다시 디코딩하면 사용자의 정보가 쉽게 유출될 수 있어 보안상 취약점을 가진다. 이런 요청이 오면 BasicAuthenticationFilter는 헤더에서 사용자의 정보를 추출해 Authentication 객체를 생성하고, 이를 통해 사용자 인증을 처리한다.
+
+### 9. RequestCacheAwareFilter
+
+캐시된 요청이 있다면 그 요청을 처리하고, 없다면 현재 요청을 처리하는 필터
+
+로그인을 하지 않은 상태에서 인증 정보가 필요한 경로에 접근하면, Spring Security는 권한이 없는 사용자를 로그인 페이지로 리다이렉트한다. 이 과정에서 원래 사용자가 접근하려던 요청은 캐시에 저장되고, 사용자는 로그인 페이지로 이동하게 된다. 로그인이 완료되면 RequestCacheAwareFilter는 캐시된 요청을 꺼내어 이를 처리하게 되는 구조이다.
