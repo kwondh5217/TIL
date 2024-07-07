@@ -9,10 +9,12 @@
 DelegatingFilterProxy는 ApplicationContext에서 FilterChainProxy를 찾아서 요청에 대한 인증을 처리한다.
 
 ## FilterChainProxy
-FilterChainProxy는 DelegatingFilterProxy가 인증을 처리할 때 사용하는 객체로 스프링 빈으로 등록되어 있다. FilterChainProxy는 내부에 스프링 빈으로 등록된 SecurityFilterChain을 가지고 있는데 이는 chain 형태로 인증을 처리하는 다수의 filter들로 구성되어 있다. FilterChainProxy는 인증을 처리할 때 SecurityFilterChain을 거치면서 인증을 처리한다.
+FilterChainProxy는 DelegatingFilterProxy가 인증을 처리할 때 사용하는 객체로 스프링 빈으로 등록되어 있다. FilterChainProxy는 내부에 스프링 빈으로 등록된 SecurityFilterChain을 가지고 있는데 이는 chain 형태로 인증을 처리하는 다수의 filter들로 구성되어 있다. FilterChainProxy는 인증을 처리할 때 SecurityFilterChain을 거치면서 인증을 처리한다. 스프링 시큐리티를 사용하면서 문제가 발생한다면 FilterChainProxy에서 문제점을 찾는 것이 바람직하다.
 
 ## SecurityFilterChain
 사용자의 요청에 대한 인증 및 인가를 처리하기 위한 필터들의 chain이다. SecurityFilterChain에 속해있는 filter들은 처리하는 요청들이 각각 다르고 인증 및 인가를 처리할 때 AuthenticationManager, AuthorizationManager를 사용하여 인증과 인가를 처리한다. 다음은 요청을 처리하는 filter들의 순서이다.
+
+![](security.png)
 
 ### 1. WebAsyncManagerIntegrationFilter
 
@@ -90,3 +92,24 @@ Basic 인증을 처리하는 필터<br>
 캐시된 요청이 있다면 그 요청을 처리하고, 없다면 현재 요청을 처리하는 필터
 
 로그인을 하지 않은 상태에서 인증 정보가 필요한 경로에 접근하면, Spring Security는 권한이 없는 사용자를 로그인 페이지로 리다이렉트한다. 이 과정에서 원래 사용자가 접근하려던 요청은 캐시에 저장되고, 사용자는 로그인 페이지로 이동하게 된다. 로그인이 완료되면 RequestCacheAwareFilter는 캐시된 요청을 꺼내어 이를 처리하게 되는 구조이다.
+
+### 10. ExceptionTranslationFilter
+
+인증 과정 중 발생할 수 있는 예외를 처리하는 필터
+
+AccessDeniedException(접근 거부), AuthenticationException(인증 실패) 과 같은 예외들이 발생했을 때, 이를 적절히 핸들링하여 사용자에게 알맞은 응답을 전송한다.
+
+### 11. AnonymousAuthenticationFilter
+
+익명 사용자에게 일시적인 인증을 제공하는 필터
+
+인증되지 않은 사용자들에게도 일정한 접근 권한을 부여하여 익명 ID와 권한을 할당한다. 인증 정보가 요구되지 않는 자원에 접근할 수 있게 하기 위함이다.
+
+## SecurityContextHolder, SecurityContext, Authentication
+
+![](securitycontext.png)
+
+- **Authentication** 이란 Spring Security 가 HTTP 요청을 필터에서 처리한 뒤 생성된 해당 요청에 대한 인증 정보를 뜻한다.
+- Authentication은 **SecurityContext**에 저장되어 있으며, FilterChainProxy는 메모리 누수를 방지하기 위해 요청이 끝나면 SecutiyContext에 있는 Authentication을 지운다.
+- SecurityContext는 **SecurityContextHolder**에 속해있으며, SecurityContextHolder는 SecurityContext를 스레드 로컬에 저장하고 있다. 따라서 동시성에 대한 문제없이, 요청을 처리하는 스레드 내에서 SecurityContextHolder에 접근하여 Authentication을 꺼내어 작업을 수행하는 것이 가능하다.
+
