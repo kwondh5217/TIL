@@ -1,6 +1,13 @@
 # 스프링 시큐리티 아키텍쳐
 스프링 시큐리티의 동작 과정의 흐름
 
+**순서**
+1. DelegatingFilterProxy
+2. FilterChainProxy
+3. SecurityFilterChain과 주요 필터들
+4. SecurityContextHolder, SecurityContext, Authentication
+5. AuthenticationManager
+
 ## DelegatingFilterProxy
 보안과 관련된 인증 처리는 스프링 컨테이너로 오기 전 서블릿 필터에서 이루어진다.
 스프링부트를 사용하면 자동으로 스프링은 서블릿 컨테이너의 필터에 DelegatingFilterProxy를 등록해준다. 이름에서 알 수 있듯이 인증처리를 위임하는 역할을 한다. <br>
@@ -13,6 +20,10 @@ FilterChainProxy는 DelegatingFilterProxy가 인증을 처리할 때 사용하�
 
 ## SecurityFilterChain
 사용자의 요청에 대한 인증 및 인가를 처리하기 위한 필터들의 chain이다. SecurityFilterChain에 속해있는 filter들은 처리하는 요청들이 각각 다르고 인증 및 인가를 처리할 때 AuthenticationManager, AuthorizationManager를 사용하여 인증과 인가를 처리한다. 다음은 요청을 처리하는 filter들의 순서이다.
+
+**요청을 처리하는 순서가 중요한 이유**
+- 요청이 인증되어 Authentication 이 생성되었다면 이후에 있는 필터들에서 인증작업을 하지 않아도 되기에 자원을 효율적으로 사용할 수 있다.
+- 보안 작업을 처리하는 필터는 인증 필터전에 처리되어야 보안성을 강화할 수 있다.
 
 ![](security.png)
 
