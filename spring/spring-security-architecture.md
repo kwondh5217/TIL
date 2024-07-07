@@ -113,3 +113,8 @@ AccessDeniedException(접근 거부), AuthenticationException(인증 실패) 과
 - Authentication은 **SecurityContext**에 저장되어 있으며, FilterChainProxy는 메모리 누수를 방지하기 위해 요청이 끝나면 SecutiyContext에 있는 Authentication을 지운다.
 - SecurityContext는 **SecurityContextHolder**에 속해있으며, SecurityContextHolder는 SecurityContext를 스레드 로컬에 저장하고 있다. 따라서 동시성에 대한 문제없이, 요청을 처리하는 스레드 내에서 SecurityContextHolder에 접근하여 Authentication을 꺼내어 작업을 수행하는 것이 가능하다.
 
+## AuthenticationManager
+
+AuthenticationManager의 역할은 사용자가 시스템에 제공하는 자격증명을 검증하는 책임을 진다. 예를 들어 사용자의 아이디와 비밀번호를 통해 로그인을 하는 요청을 서버에 보냈을 때, UsernamePasswordAuthenticationFilter는 요청으로 들어온 사용자의 정보를 가지고 하나의 토큰을 생성한다. 이 토큰을 가지고 AuthenticationManager에게 검증을 요구하게 된다. 검증이 완료가 되면 AuthenticationManager는 Authentication을 생성하여 반환한다.
+
+스프링 시큐리티를 적용할 때, UserDetailsServcie 인터페이스를 구현하여 loadUserByUsername이라는 메서드를 오버라이딩하여 사용하게 되는데 내부적으로 ProviderManager가 이 메서드를 호출하여 현재 요청으로 들어온 토큰과, 사용자의 패스워드를 비교하여 검증한다. ProviderManager는 일반적으로 사용되는 AuthenticationManager의 구현체이다.
