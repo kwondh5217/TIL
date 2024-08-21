@@ -1,0 +1,35 @@
+import java.util.*;
+
+class Solution {
+    public String solution(String interview) {
+        String lowerCaseInterview = interview.toLowerCase();
+        Map<String, Integer> patternFrequency = new HashMap<>();
+
+        // 모든 가능한 패턴의 빈도 계산 (1 이상부터 전체 길이까지)
+        int length = lowerCaseInterview.length();
+        for (int len = 1; len <= length; len++) { // 패턴의 길이는 1부터 시작해서 전체 길이까지
+            for (int i = 0; i <= length - len; i++) {
+                String pattern = lowerCaseInterview.substring(i, i + len);
+                patternFrequency.put(pattern, patternFrequency.getOrDefault(pattern, 0) + 1);
+            }
+        }
+
+        // 가장 많이 나타난 패턴들의 목록 찾기
+        int maxFrequency = 0;
+        for (int frequency : patternFrequency.values()) {
+            if (frequency > maxFrequency) {
+                maxFrequency = frequency;
+            }
+        }
+
+        // 해당 빈도를 가진 모든 패턴 삭제
+        for (Map.Entry<String, Integer> entry : patternFrequency.entrySet()) {
+            if (entry.getValue() == maxFrequency) {
+                String mostFrequentPattern = entry.getKey();
+                interview = interview.replaceAll("(?i)" + mostFrequentPattern, "");
+            }
+        }
+
+        return interview;
+    }
+}
