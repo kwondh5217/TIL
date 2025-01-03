@@ -149,3 +149,4 @@ Integer reduce = stream.reduce(0, (a, b) -> a + b);
 Optional<Integer> optional = numbers.stream()
     .reduce(Integer::max);
 ```
+
